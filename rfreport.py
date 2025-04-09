@@ -5,7 +5,6 @@
 import datetime
 import os
 import re
-import sys
 
 from collections import defaultdict
 import xml.etree.ElementTree as ET
