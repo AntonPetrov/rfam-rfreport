@@ -459,6 +459,27 @@ def verify_species_file_exists(input_path):
         os.system(cmd)
 
 
+def run_rscape(input_path, output_path):
+    """
+    Run R-scape on the align file.
+    R-scape must be installed and available in the PATH.
+    """
+    input_path = os.path.abspath(input_path)
+    rscape_outdir = os.path.join(output_path, 'rscape')
+    if not os.path.exists(rscape_outdir):
+        os.makedirs(rscape_outdir)
+    basename = os.path.basename(os.path.normpath(input_path))
+    rscape_subfolder = os.path.join(rscape_outdir, basename)
+    if not os.path.exists(rscape_subfolder):
+        os.makedirs(rscape_subfolder)
+    cmd = (
+        f"R-scape -s --cacofold --lancaster --rmcoding --outdir {rscape_subfolder} "
+        f"--outname {basename} {os.path.join(input_path, 'align')} > /dev/null"
+    )
+    print(f'Running R-scape with command: {cmd}')
+    os.system(cmd)
+
+
 @click.command()
 @click.argument('input_path', type=click.Path(exists=True))
 @click.option('--output_path', type=click.Path(), default=None, help='Path to output folder')
@@ -491,6 +512,7 @@ def main(input_path, output_path, maxhits, threshold, auto):
     seed_taxa = process_tax_string(species)
     html_file = write_html(output_path, species, align, ss_cons, rf_line, outlist, basename, ga_threshold, big_drops, outlist_skip, seed_nts, mature_mirnas, seed_taxa)
     minify_html(html_file)
+    run_rscape(input_path, output_path)
 
 
 if __name__ == '__main__':
