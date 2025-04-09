@@ -13,7 +13,8 @@ import xml.etree.ElementTree as ET
 # activate virtualenv
 folder_of_script = os.path.dirname(os.path.realpath(__file__))
 activate_script = os.path.join(folder_of_script, 'env', 'bin', 'activate_this.py')
-execfile(activate_script, dict(__file__=activate_script))
+with open(activate_script) as f:
+    exec(f.read(), dict(__file__=activate_script))
 
 import click
 import emoji
@@ -329,7 +330,7 @@ def get_emoji(tax_string):
         'Insecta': ':cricket:',
     }
     found = False
-    for taxon, emoji_string in mapping.iteritems():
+    for taxon, emoji_string in mapping.items():
         if taxon in tax_string:
             return emoji.emojize(emoji_string)
     if not found:
@@ -378,7 +379,7 @@ def process_large_outlist(outlist, num_hits_below_reversed):
     species = set()
     below_reversed = False
     for i, row in enumerate(outlist):
-        if isinstance(row, basestring):
+        if isinstance(row, str):
             if row.startswith('BEST REVERSED'):
                 below_reversed = True
             continue
@@ -405,7 +406,7 @@ def write_html(output_path, species, align, ss_cons, rf_line, outlist, family, g
     output_file = os.path.join(output_path, '{}.html'.format(family))
     with open(output_file, 'w') as f_out:
         output = template.render(species=species, outlist=outlist, align=align, ss_cons=ss_cons, ss_cons_split=list(ss_cons), rf_line=rf_line, family=family, big_drops=big_drops, outlist_skip=outlist_skip, seed_nts=seed_nts, mature_mirnas=mature_mirnas, seed_taxa=seed_taxa)
-        f_out.write(output.encode('utf-8'))
+        f_out.write(output)
     print('Created file {}'.format(output_file))
     return output_file
 
