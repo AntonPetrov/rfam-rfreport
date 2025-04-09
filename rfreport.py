@@ -140,7 +140,8 @@ def fetch_tax_string(name):
 def parse_align_with_seed(data_path, threshold):
     ss_cons = ''
     rf_line = ''
-    align = os.path.join(data_path, 'align-{}'.format(threshold))
+    # align = os.path.join(data_path, 'align-{}'.format(threshold))
+    align = os.path.join(data_path, 'align')
     align_with_seed = os.path.join(data_path, 'align-with-seed-{}'.format(threshold))
     align_with_seed_pfam = os.path.join(data_path, 'align-with-seed-pfam-{}'.format(threshold))
 
