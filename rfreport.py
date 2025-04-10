@@ -309,25 +309,86 @@ def get_rnacentral_metadata(urs_taxid):
 
 def get_emoji(tax_string):
     mapping = {
+        # Mammals
         'Primates': ':monkey_face:',
-        'Viridiplantae': ':herb:',
-        'Mollusca': ':oyster:',
+        'Hominidae': ':person:',
         'Suidae': ':pig:',
         'Camelidae': ':camel:',
         'Bovinae': ':cow_face:',
+        'Cervidae': ':deer:',
         'Equidae': ':horse_face:',
         'Canidae': ':dog_face:',
+        'Felinae': ':cat_face:',
+        'Ursidae': ':bear_face:',
+        'Ailuropoda': ':panda_face:',
         'Rodentia': ':mouse:',
+        'Muridae': ':rat:',
         'Erinaceidae': ':hedgehog:',
         'Chiroptera': ':bat:',
-        'Felinae': ':cat_face:',
-        'Bacteria': ':microbe:',
-        'Ailuropoda': ':panda_face:',
         'Proboscidea': ':elephant:',
         'Ovis': ':ewe:',
-        'Xenopodinae': ':frog_face:',
+        'Caprinae': ':goat:',
+        'Marsupialia': ':kangaroo:',
+        'Cetacea': ':whale:',
+        'Pinnipedia': ':seal:',
+        'Rhinocerotidae': ':rhinoceros:',
+        'Lagomorpha': ':rabbit:',
+
+        # Birds
         'Aves': ':bird:',
+        'Passeriformes': ':bird:',
+        'Strigiformes': ':owl:',
+        'Anseriformes': ':duck:',
+        'Galliformes': ':rooster:',
+        'Spheniscidae': ':penguin:',
+
+        # Reptiles & Amphibians
+        'Reptilia': ':lizard:',
+        'Crocodylia': ':crocodile:',
+        'Amphibia': ':frog:',
+        'Xenopodinae': ':frog_face:',
+
+        # Fish & aquatic
+        'Actinopterygii': ':fish:',
+        'Chondrichthyes': ':shark:',
+        'Cephalopoda': ':squid:',
+        'Mollusca': ':oyster:',
+        'Cnidaria': ':jellyfish:',
+        'Porifera': ':sponge:',
+        'Echinodermata': ':star:',
+
+        # Invertebrates
         'Insecta': ':cricket:',
+        'Coleoptera': ':beetle:',
+        'Lepidoptera': ':butterfly:',
+        'Diptera': ':fly:',
+        'Hymenoptera': ':honeybee:',
+        'Arthropoda': ':bug:',
+        'Annelida': ':earthworm:',
+        'Nematoda': ':worm:',
+        'Tardigrada': ':droplet:',  # closest emoji for water bears!
+
+        # Plants & fungi
+        'Viridiplantae': ':herb:',
+        'Bryophyta': ':deciduous_tree:',
+        'Pteridophyta': ':seedling:',
+        'Magnoliophyta': ':cherry_blossom:',
+        'Fungi': ':mushroom:',
+        'Basidiomycota': ':mushroom:',
+        'Ascomycota': ':bread:',  # stretching a bit!
+
+        # Microbes & other
+        'Bacteria': ':microbe:',
+        'Cyanobacteria': ':droplet:',
+        'Archaea': ':volcano:',
+        'Protista': ':globe_with_meridians:',
+        'Virus': ':syringe:',
+        'Plasmodium': ':mosquito:',
+
+        # General / unknown / fallback
+        'Metazoa': ':dna:',
+        'Eukaryota': ':dna:',
+        'Unknown': ':grey_question:',
     }
     found = False
     for taxon, emoji_string in mapping.items():
