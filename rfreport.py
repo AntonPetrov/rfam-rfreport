@@ -473,7 +473,7 @@ def run_rscape(input_path, output_path):
     if not os.path.exists(rscape_subfolder):
         os.makedirs(rscape_subfolder)
     cmd = (
-        f"R-scape -s --cacofold --lancaster --rmcoding --outdir {rscape_subfolder} "
+        f"R-scape -s --cacofold --r3d --lancaster --rmcoding --outdir {rscape_subfolder} "
         f"--outname {basename} {os.path.join(input_path, 'align')} > /dev/null"
     )
     print(f'Running R-scape with command: {cmd}')
