@@ -399,14 +399,20 @@ def get_emoji(tax_string):
 
 
 def detect_bit_score_drops(outlist):
+    """
+    Detect large drops in bit score or e-value.
+    """
+    EVALUE_THRESHOLD = 0.005
     big_drop = [False] * len(outlist)
     previous = float(outlist[0]['bits'])
     for i, entry in enumerate(outlist):
         if 'bits' in entry:
             current = float(entry['bits'])
-        if previous - current > 10:
+            if previous - current > 10:
+                big_drop[i] = True
+            previous = current
+        if isinstance(entry, dict) and float(entry["evalue"]) > EVALUE_THRESHOLD:
             big_drop[i] = True
-        previous = current
     return big_drop
 
 
