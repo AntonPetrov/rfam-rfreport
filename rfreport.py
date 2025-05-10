@@ -5,7 +5,6 @@
 import datetime
 import os
 import re
-import sys
 
 from collections import defaultdict
 import xml.etree.ElementTree as ET
@@ -13,7 +12,8 @@ import xml.etree.ElementTree as ET
 # activate virtualenv
 folder_of_script = os.path.dirname(os.path.realpath(__file__))
 activate_script = os.path.join(folder_of_script, 'env', 'bin', 'activate_this.py')
-execfile(activate_script, dict(__file__=activate_script))
+with open(activate_script) as f:
+    exec(f.read(), dict(__file__=activate_script))
 
 import click
 import emoji
@@ -140,7 +140,8 @@ def fetch_tax_string(name):
 def parse_align_with_seed(data_path, threshold):
     ss_cons = ''
     rf_line = ''
-    align = os.path.join(data_path, 'align-{}'.format(threshold))
+    # align = os.path.join(data_path, 'align-{}'.format(threshold))
+    align = os.path.join(data_path, 'align')
     align_with_seed = os.path.join(data_path, 'align-with-seed-{}'.format(threshold))
     align_with_seed_pfam = os.path.join(data_path, 'align-with-seed-pfam-{}'.format(threshold))
 
@@ -308,28 +309,89 @@ def get_rnacentral_metadata(urs_taxid):
 
 def get_emoji(tax_string):
     mapping = {
+        # Mammals
         'Primates': ':monkey_face:',
-        'Viridiplantae': ':herb:',
-        'Mollusca': ':oyster:',
+        'Hominidae': ':person:',
         'Suidae': ':pig:',
         'Camelidae': ':camel:',
         'Bovinae': ':cow_face:',
+        'Cervidae': ':deer:',
         'Equidae': ':horse_face:',
         'Canidae': ':dog_face:',
+        'Felinae': ':cat_face:',
+        'Ursidae': ':bear_face:',
+        'Ailuropoda': ':panda_face:',
         'Rodentia': ':mouse:',
+        'Muridae': ':rat:',
         'Erinaceidae': ':hedgehog:',
         'Chiroptera': ':bat:',
-        'Felinae': ':cat_face:',
-        'Bacteria': ':microbe:',
-        'Ailuropoda': ':panda_face:',
         'Proboscidea': ':elephant:',
         'Ovis': ':ewe:',
-        'Xenopodinae': ':frog_face:',
+        'Caprinae': ':goat:',
+        'Marsupialia': ':kangaroo:',
+        'Cetacea': ':whale:',
+        'Pinnipedia': ':seal:',
+        'Rhinocerotidae': ':rhinoceros:',
+        'Lagomorpha': ':rabbit:',
+
+        # Birds
         'Aves': ':bird:',
+        'Passeriformes': ':bird:',
+        'Strigiformes': ':owl:',
+        'Anseriformes': ':duck:',
+        'Galliformes': ':rooster:',
+        'Spheniscidae': ':penguin:',
+
+        # Reptiles & Amphibians
+        'Reptilia': ':lizard:',
+        'Crocodylia': ':crocodile:',
+        'Amphibia': ':frog:',
+        'Xenopodinae': ':frog_face:',
+
+        # Fish & aquatic
+        'Actinopterygii': ':fish:',
+        'Chondrichthyes': ':shark:',
+        'Cephalopoda': ':squid:',
+        'Mollusca': ':oyster:',
+        'Cnidaria': ':jellyfish:',
+        'Porifera': ':sponge:',
+        'Echinodermata': ':star:',
+
+        # Invertebrates
         'Insecta': ':cricket:',
+        'Coleoptera': ':beetle:',
+        'Lepidoptera': ':butterfly:',
+        'Diptera': ':fly:',
+        'Hymenoptera': ':honeybee:',
+        'Arthropoda': ':bug:',
+        'Annelida': ':earthworm:',
+        'Nematoda': ':worm:',
+        'Tardigrada': ':droplet:',  # closest emoji for water bears!
+
+        # Plants & fungi
+        'Viridiplantae': ':herb:',
+        'Bryophyta': ':deciduous_tree:',
+        'Pteridophyta': ':seedling:',
+        'Magnoliophyta': ':cherry_blossom:',
+        'Fungi': ':mushroom:',
+        'Basidiomycota': ':mushroom:',
+        'Ascomycota': ':bread:',  # stretching a bit!
+
+        # Microbes & other
+        'Bacteria': ':microbe:',
+        'Cyanobacteria': ':droplet:',
+        'Archaea': ':volcano:',
+        'Protista': ':globe_with_meridians:',
+        'Virus': ':syringe:',
+        'Plasmodium': ':mosquito:',
+
+        # General / unknown / fallback
+        'Metazoa': ':dna:',
+        'Eukaryota': ':dna:',
+        'Unknown': ':grey_question:',
     }
     found = False
-    for taxon, emoji_string in mapping.iteritems():
+    for taxon, emoji_string in mapping.items():
         if taxon in tax_string:
             return emoji.emojize(emoji_string)
     if not found:
@@ -337,14 +399,20 @@ def get_emoji(tax_string):
 
 
 def detect_bit_score_drops(outlist):
+    """
+    Detect large drops in bit score or e-value.
+    """
+    EVALUE_THRESHOLD = 0.005
     big_drop = [False] * len(outlist)
     previous = float(outlist[0]['bits'])
     for i, entry in enumerate(outlist):
         if 'bits' in entry:
             current = float(entry['bits'])
-        if previous - current > 10:
+            if previous - current > 10:
+                big_drop[i] = True
+            previous = current
+        if isinstance(entry, dict) and float(entry["evalue"]) > EVALUE_THRESHOLD:
             big_drop[i] = True
-        previous = current
     return big_drop
 
 
@@ -378,7 +446,7 @@ def process_large_outlist(outlist, num_hits_below_reversed):
     species = set()
     below_reversed = False
     for i, row in enumerate(outlist):
-        if isinstance(row, basestring):
+        if isinstance(row, str):
             if row.startswith('BEST REVERSED'):
                 below_reversed = True
             continue
@@ -405,7 +473,7 @@ def write_html(output_path, species, align, ss_cons, rf_line, outlist, family, g
     output_file = os.path.join(output_path, '{}.html'.format(family))
     with open(output_file, 'w') as f_out:
         output = template.render(species=species, outlist=outlist, align=align, ss_cons=ss_cons, ss_cons_split=list(ss_cons), rf_line=rf_line, family=family, big_drops=big_drops, outlist_skip=outlist_skip, seed_nts=seed_nts, mature_mirnas=mature_mirnas, seed_taxa=seed_taxa)
-        f_out.write(output.encode('utf-8'))
+        f_out.write(output)
     print('Created file {}'.format(output_file))
     return output_file
 
@@ -458,6 +526,27 @@ def verify_species_file_exists(input_path):
         os.system(cmd)
 
 
+def run_rscape(input_path, output_path):
+    """
+    Run R-scape on the align file.
+    R-scape must be installed and available in the PATH.
+    """
+    input_path = os.path.abspath(input_path)
+    rscape_outdir = os.path.join(output_path, 'rscape')
+    if not os.path.exists(rscape_outdir):
+        os.makedirs(rscape_outdir)
+    basename = os.path.basename(os.path.normpath(input_path))
+    rscape_subfolder = os.path.join(rscape_outdir, basename)
+    if not os.path.exists(rscape_subfolder):
+        os.makedirs(rscape_subfolder)
+    cmd = (
+        f"R-scape -s --cacofold --r3d --lancaster --rmcoding --outdir {rscape_subfolder} "
+        f"--outname {basename} {os.path.join(input_path, 'align')} > /dev/null"
+    )
+    print(f'Running R-scape with command: {cmd}')
+    os.system(cmd)
+
+
 @click.command()
 @click.argument('input_path', type=click.Path(exists=True))
 @click.option('--output_path', type=click.Path(), default=None, help='Path to output folder')
@@ -490,6 +579,7 @@ def main(input_path, output_path, maxhits, threshold, auto):
     seed_taxa = process_tax_string(species)
     html_file = write_html(output_path, species, align, ss_cons, rf_line, outlist, basename, ga_threshold, big_drops, outlist_skip, seed_nts, mature_mirnas, seed_taxa)
     minify_html(html_file)
+    run_rscape(input_path, output_path)
 
 
 if __name__ == '__main__':
